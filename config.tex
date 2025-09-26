@@ -1,0 +1,128 @@
+% Dokumentart auswählen: pa1, pa2, ba
+\newcommand{\dokumentart}{pa2}
+
+
+% Deckblatt Konfiguration
+\newcommand{\projecttitle}{Zwischen Tradition und Innovation: Digitalisierung im deutschen Mittelstand}
+
+\newcommand{\degreeprogram}{Studiengang Wirtschaftsinformatik}
+\newcommand{\faculty}{in der Fakultät Wirtschaft}
+\newcommand{\university}{an der Duale Hochschule Baden-Württemberg}
+\newcommand{\universitycity}{Standort Heidenheim}
+
+\newcommand{\studentname}{Max Mustermann}
+\newcommand{\studentaddress}{Musterstraße 1}
+\newcommand{\studentcity}{99999 Musterstadt}
+\newcommand{\studentid}{1234567}
+
+\newcommand{\companyname}{Beispiel GmbH}
+\newcommand{\companyaddress}{Musterstraße 1}
+\newcommand{\companycity}{99999 Musterstadt}
+
+\newcommand{\semester}{2. Semester}
+\newcommand{\tutorcompany}{Max Mustermann}
+\newcommand{\tutoruniversity}{Erika Müller}
+
+\newcommand{\signaturelocation}{Exampletown}
+\newcommand{\signaturename}{John Doe}
+\newcommand{\signaturefunction}{Lorem Ipsum Officer}
+
+
+% Relevant für Bachelorarbeit
+\newcommand{\degree}{Bachelor of Science}
+
+% Ehrenwörtliche Erklärung
+\newcommand{\wordcount}{9999}
+
+% ----------------------------------------------------------------------------------------------------------
+
+% Hilfsbefehl für Linien mit Text (z.B. Unterschrift)
+\newcommand{\linedEntry}[3][0.3cm]{
+  \makebox[#2]{\hrulefill}
+  \hspace*{-#2}
+  \makebox[#2][l]{\hspace*{#1}\raisebox{0.9ex}[0pt][0pt]{#3}}
+}
+
+% XeLaTeX: Unicode & Systemschriften
+\RequirePackage[ngerman]{babel}
+\usepackage{microtype}
+\usepackage{fontspec}
+\setmainfont{Arial}
+
+% Seitenlayout
+\usepackage[a4paper, left=3cm, right=3cm, top=2cm, bottom=2cm]{geometry}
+
+% Absatz und Zeilenabstand
+\usepackage{setspace}
+\onehalfspacing         % 1,5-zeiliger Abstand
+\setlength{\parskip}{6pt}   % 6pt Abstand zwischen Absätzen
+\setlength{\parindent}{0pt} % Kein Einzug
+\setlength{\skip\footins}{20pt}
+\usepackage[
+	bottom,
+	hang,
+	stable
+]{footmisc}
+\setlength{\footnotemargin}{0.5cm}
+
+\usepackage[none]{hyphenat}
+\setlength{\emergencystretch}{\maxdimen}
+
+% Blocksatz
+\usepackage{ragged2e}
+\justifying
+
+% Fußnoten: kleiner und einzeilig
+\usepackage[bottom]{footmisc}
+\renewcommand{\footnotesize}{\fontsize{10pt}{12pt}\selectfont} % 2pt kleiner als 12pt
+
+% Nummerierung römisch für Verzeichnisse, arabisch für Textteil
+\usepackage{fancyhdr}
+\usepackage{etoolbox}
+
+% Literaturverzeichnis sichtbar im Inhaltsverzeichnis
+\usepackage[nottoc]{tocbibind}
+
+% Links klickbar + saubere URL-Umbrüche (xurl optional)
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+
+% Bilder und Tabellen
+\usepackage[figure,table]{totalcount}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{caption}
+\setlength{\belowcaptionskip}{-15pt}
+\captionsetup[table]{
+  name=Tab.,
+  labelfont={bf},
+  font={footnotesize}
+}
+\captionsetup[figure]{
+  name=Abb.,
+  labelfont={bf},
+  font={footnotesize}
+}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{amsmath}
+
+% Deckblatt
+\usepackage{xstring}
+\usepackage[datesep={.}, useregional={numeric}]{datetime2}
+
+% Unicode-Mappings für Striche
+\usepackage{newunicodechar}
+\newunicodechar{–}{--}
+\newunicodechar{—}{---}
+
+%Glossar
+\usepackage[nopostdot,nonumberlist,acronym,toc,style=list]{glossaries}
+\makeglossaries
+
+%Literaturverzeichnis & Zitation
+\RequirePackage{csquotes}
+\usepackage{bib_design_setup}
+\addbibresource{literatur.bib}
+\AtBeginBibliography{\RaggedRight}

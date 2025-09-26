@@ -1,0 +1,341 @@
+\ProvidesPackage{bib_design_setup}
+
+% --------------------------------------------------------------------
+% BIBLATEX BASISKONFIGURATION
+% --------------------------------------------------------------------
+% - authoryear-Stil
+% - Sortierung Name–Jahr–Titel
+% - Et-al-Regel: bis 2 Namen voll, sonst et al.
+% - Zitate ebenfalls max. 2 Namen
+% - Initialen statt ausgeschriebener Vornamen
+% - DOI/URL ausgeben, ISBN unterdrücken
+\RequirePackage[
+  backend=biber,
+  style=authoryear,
+  sorting=nyt,
+  uniquelist=false,
+  uniquename=false,
+  % Literaturverzeichnis:
+  maxbibnames=2,
+  minbibnames=1,
+  % Zitate:
+  maxcitenames=2,
+  mincitenames=1,
+  % Initialen
+  giveninits=true,
+  doi=true,
+  url=true,
+  isbn=false
+]{biblatex}
+
+% --------------------------------------------------------------------
+% SPRACHSTRINGS & ZITAT-TRENNER
+% --------------------------------------------------------------------
+% "et al." in Deutsch explizit
+\DefineBibliographyStrings{ngerman}{
+  andothers  = {et\addabbrvspace al\adddot},
+  andmore    = {et\addabbrvspace al\adddot}
+}
+
+% Komma zwischen Name und Jahr in Zitaten (Autor–Jahr)
+\renewcommand*{\nameyeardelim}{\addcomma\space}
+
+% Komma zwischen Titel und Jahr (titelbasierte Zitate)
+\DeclareDelimFormat{titleyeardelim}{\addcomma\space}
+
+% Reserve (falls Stil nonameyeardelim nutzt)
+\DeclareDelimFormat{nonameyeardelim}{\addcomma\space}
+
+% Namensdarstellung generell: "Nachname, Initiale"
+\DeclareNameAlias{sortname}{family-given}
+\DeclareNameAlias{default}{family-given}
+
+% In Zitaten: Titel nicht kursiv/ohne Quotes
+\DeclareFieldFormat{citetitle}{#1}
+\DeclareFieldFormat[misc]{citetitle}{#1}
+
+% Für @misc (z. B. Normen): labeltitle aus number → shorttitle → title
+\DeclareLabeltitle[misc]{%
+  \field{number}%
+  \field{shorttitle}%
+  \field{title}%
+}
+
+% --------------------------------------------------------------------
+% FELDFORMATE (Schrift, DOI/URL, Titel etc.)
+% --------------------------------------------------------------------
+% URLs in normaler Schrift und klickbar (Hyperref vorausgesetzt)
+\urlstyle{same}
+
+% Titel in diversen Eintragsarten ohne Kursiv/Anführungszeichen
+\DeclareFieldFormat[article]{title}{#1}
+\DeclareFieldFormat[incollection]{title}{#1}
+\DeclareFieldFormat[inproceedings]{title}{#1}
+\DeclareFieldFormat[inbook]{title}{#1}
+\DeclareFieldFormat[book]{title}{#1}
+\DeclareFieldFormat[incollection]{booktitle}{#1}
+\DeclareFieldFormat[thesis]{title}{#1}
+\DeclareFieldFormat[standard]{title}{#1}
+\DeclareFieldFormat[report]{title}{#1}
+\DeclareFieldFormat[online]{title}{#1}
+\DeclareFieldFormat[misc]{title}{#1}
+\DeclareFieldFormat[unpublished]{title}{#1}
+\DeclareFieldFormat[patent]{title}{#1}
+\DeclareFieldFormat[manual]{title}{#1}
+\DeclareFieldFormat[article]{subtitle}{#1}
+\DeclareFieldFormat[incollection]{subtitle}{#1}
+\DeclareFieldFormat[inproceedings]{subtitle}{#1}
+
+% URL-Ausgabe (klickbar, ohne "URL:")
+\DeclareFieldFormat{url}{\url{#1}}
+
+% DOI-Ausgabe (klickbar, Präfix "DOI:", normale Schrift)
+\DeclareFieldFormat{doi}{\ifhyperref{\href{https://doi.org/#1}{#1}}{#1}}
+
+% Seitenpräfix im Deutschen: "S. "
+\DeclareFieldFormat{pages}{S.\space #1}
+
+% --------------------------------------------------------------------
+% VERZEICHNISLAYOUT
+% --------------------------------------------------------------------
+% Kein hängender Einzug; größerer Abstand zwischen Einträgen
+
+\setlength\bibitemsep{1ex}
+\setlength{\bibparsep}{\baselineskip}
+
+% Autorentrenner im Verzeichnis: Semikolon
+\renewcommand*{\multinamedelim}{\addsemicolon\space}%
+\renewcommand*{\finalnamedelim}{\addsemicolon\space}%
+
+% Nur erster Verlagsort + "u. a.," wenn mehrere Orte
+\DeclareListFormat{loc:first}{%
+  \ifnum\value{listcount}=1
+    #1%
+    \ifnumgreater{\value{listtotal}}{1}{\space u.\,a.,}{}%
+  \fi
+}
+
+% Makro: Ort, Verlag, Datum in Reihenfolge
+\renewbibmacro*{publisher+location+date}{%
+  \printlist[loc:first]{location}%
+  \setunit{\addcomma\space}%
+  \printlist{publisher}%
+  \setunit{\addcomma\space}%
+  \usebibmacro{date}%
+}
+
+% --------------------------------------------------------------------
+% AUTOR-FALLBACK
+% --------------------------------------------------------------------
+% Fallback-Reihenfolge:
+% Author → Editor (markiert) → Institution → "o. V."
+\renewbibmacro*{author/editor+others}{%
+  \ifnameundef{author}
+    {%
+      \ifnameundef{editor}
+        {%
+          \iffieldundef{institution}
+            {\printtext{o.\,V.}}
+            {\printfield{institution}}%
+        }%
+        {%
+          \printnames{editor}\addspace\mkbibparens{\bibstring{editor}}%
+        }%
+    }%
+    {\printnames{author}}%
+}
+
+% --------------------------------------------------------------------
+% AUFLAGE (Edition)
+% --------------------------------------------------------------------
+% Ausgabe nur ab 2. Auflage; Komma danach
+% (Wenn 1. Auflage gezeigt werden soll, Bedingung anpassen.)
+\newbibmacro*{printedition}{%
+  \iffieldundef{edition}{}{%
+    \iffieldint{edition}{%
+      \ifnumgreater{\thefield{edition}}{1}
+        {,\space \printtext{\thefield{edition}}\adddotspace Aufl.,}%
+        {}%
+    }{%
+      ,\space \printfield{edition},%
+    }%
+  }%
+}
+
+% --------------------------------------------------------------------
+% JOURNALMAKROS (Journal nicht kursiv)
+% --------------------------------------------------------------------
+\renewbibmacro*{journal+issuetitle}{%
+  \usebibmacro{journal}%
+  \setunit*{\addspace}%
+  \usebibmacro{issue+date}%
+  \setunit*{\addcolon\space}%
+  \usebibmacro{issue}%
+  \newunit
+}
+\renewbibmacro*{journal}{%
+  \iffieldundef{journaltitle}{}%
+    {%
+      \printtext{\thefield{journaltitle}}%
+      \setunit{\subtitlepunct}%
+      \printtext{\thefield{journalsubtitle}}%
+    }%
+  \newunit
+}
+
+% --------------------------------------------------------------------
+% ALIAS: @standard → @misc (falls kein eigener Standardtreiber)
+% --------------------------------------------------------------------
+\DeclareBibliographyAlias{standard}{misc}
+
+% --------------------------------------------------------------------
+% TREIBER: @book
+% --------------------------------------------------------------------
+% Schema: Autor(en) (Jahr). Titel, Auflage, Ort, Verlag. DOI/URL
+\DeclareBibliographyDriver{book}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{author/editor+others}%
+  \setunit{\space}\printtext{(\printfield{year})}%
+  \newunit\newblock
+  \printfield{title}%
+  \usebibmacro{printedition}%
+  \setunit{\addcomma\space}\printlist[loc:first]{location}%
+  \setunit{\addcomma\space}\printlist{publisher}%
+  \addperiod\space
+  \iffieldundef{doi}{\iffieldundef{url}{}{\printfield{url}}}{\printfield{doi}}%
+  \usebibmacro{finentry}%
+}
+
+% --------------------------------------------------------------------
+% TREIBER: @incollection (Beitrag in Sammelband)
+% --------------------------------------------------------------------
+\DeclareBibliographyDriver{incollection}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{author/editor+others}%
+  \setunit{\space}\printtext{(\printfield{year})}%
+  \addperiod\space
+  \printfield{title}%
+  \addperiod\space
+  \printtext{\bibstring{in}\space}%
+  \printnames{editor}%
+  \addspace\mkbibparens{\bibstring{editor}}%
+  \addcomma\space
+  \printfield{booktitle}%
+  \usebibmacro{printedition}% → "…, 2. Aufl.,"
+  \setunit{\addcomma\space}\usebibmacro{chapter+pages}% → "S. xx–yy"
+  \addperiod\space
+  \printlist[loc:first]{location}%
+  \addcomma\space
+  \printlist{publisher}%
+  \addperiod\space
+  \iffieldundef{doi}{\iffieldundef{url}{}{\printfield{url}}}{\printfield{doi}}%
+  \usebibmacro{finentry}%
+}
+
+% --------------------------------------------------------------------
+% TREIBER: @article (Zeitschriftenartikel)
+% --------------------------------------------------------------------
+% Journal nicht kursiv; Ausgabe wie "Zeitschrift, 45(2), S. …"
+\DeclareBibliographyDriver{article}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{author/editor+others}%
+  \setunit{\space}\printtext{(\printfield{year})}%
+  \addperiod\space
+  \printfield{title}%
+  \addperiod\space
+  \iffieldundef{journaltitle}{}{\printtext{\thefield{journaltitle}}}%
+  \iffieldundef{volume}{}{%
+    \addcomma\space
+    \printfield{volume}%
+    \iffieldundef{number}{}{%
+      \printtext{(\printfield{number})}%
+    }%
+  }%
+  \setunit{\addcomma\space}\printfield{pages}%
+  \addperiod\space
+  \iffieldundef{doi}{\iffieldundef{url}{}{\printfield{url}}}{\printfield{doi}}%
+  \usebibmacro{finentry}%
+}
+
+% --------------------------------------------------------------------
+% TREIBER: @online (Internetveröffentlichung)
+% --------------------------------------------------------------------
+% Schema: Autor/Inst. (Jahr). Titel. Online im Internet, URL, Abfrage v. DD.MM.YYYY.
+\newcommand*\twodigits[1]{\ifnum#1<10 0\fi\number#1}
+\DeclareBibliographyDriver{online}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \usebibmacro{author/editor+others}%
+  \setunit{\space}\printtext{(\printfield{year})}%
+  \addperiod\space
+  \printfield{title}%
+  \addperiod\space
+  \printtext{Online im Internet,}\space
+  \printfield{url}%
+  % Optional: Veröffentlichungsdatum
+  \iffieldundef{date}{}{%
+    \addcomma\space Veröffentlicht am \printdate
+  }%
+  % Abfrage-Datum TT.MM.JJJJ mit führenden Nullen
+  \iffieldundef{urlyear}{}{%
+    \addcomma\space Abfrage v.\space
+    \iffieldundef{urlday}{}{\twodigits{\thefield{urlday}}\adddot}%
+    \iffieldundef{urlmonth}{}{\twodigits{\thefield{urlmonth}}\adddot}%
+    \printfield{urlyear}%
+  }%
+  \addperiod\space
+  \usebibmacro{finentry}%
+}
+
+% --------------------------------------------------------------------
+% TREIBER: @report (unternehmensinternes Material)
+% --------------------------------------------------------------------
+% Schema: Institution/Autor (Jahr). Titel. [optional note]
+\DeclareBibliographyDriver{report}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  \ifnameundef{author}
+    {\printfield{institution}}
+    {\printnames{author}}%
+  \setunit{\space}\printtext{(\printfield{year})}%
+  \addperiod\space
+  \printfield{title}%
+  \iffieldundef{note}{}{\addperiod\space\printfield{note}}%
+  \addperiod\space
+  \usebibmacro{finentry}%
+}
+
+% --------------------------------------------------------------------
+% TREIBER: @misc (z. B. Normen)
+% --------------------------------------------------------------------
+\DeclareLabeltitle[standard]{% 
+  \field{number}% 
+  \field{shorttitle}% 
+  \field{title}% 
+}
+
+% Schema: Nummer (Jahr). Titel. Ort: Herausgeber.
+% organization wird Verlag vorgezogen; Doppelpunkt nur, wenn einer vorhanden.
+\DeclareBibliographyDriver{standard}{%
+  \usebibmacro{bibindex}\usebibmacro{begentry}%
+  % Normbezeichnung/Nummer (+ Jahr)
+  \iffieldundef{number}{\printfield{title}}{\printfield{number}}%
+  \setunit{\space}\printtext{(\printfield{year})}%
+  \addperiod\space
+  % Titel nur falls Nummer vorhanden war
+  \iffieldundef{number}{}{%
+    \printfield{title}\addperiod\space
+  }%
+  % Ort : Herausgeber (organization bevorzugt, sonst publisher)
+  \printlist[loc:first]{location}%
+  \ifboolexpr{ test {\iflistundef{organization}} and test {\iflistundef{publisher}} }
+    {}% keiner vorhanden → kein Doppelpunkt
+    {%
+      \addcolon\space
+      \iflistundef{organization}
+        {\printlist{publisher}}
+        {\printlist{organization}}%
+    }%
+  \addperiod\space
+  \usebibmacro{finentry}%
+}
+
+\endinput

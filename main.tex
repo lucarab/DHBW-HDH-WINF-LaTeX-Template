@@ -1,0 +1,54 @@
+\documentclass[a4paper,12pt]{article}
+\input{./config.tex}
+
+\begin{document}
+\newcounter{romannumbering}
+\pagenumbering{Roman}
+\input{./deckblatt/dokumentart.tex}
+
+% Inhaltsverzeichnis
+\newpage
+\setcounter{page}{1}
+\tableofcontents
+
+% Vorwort
+\newpage
+\input{./vorwort/vorwort.tex}
+
+% Glossar und Abkürzungsverzeichnis
+\newpage
+\printglossary[title=Glossar]
+\printglossary[type=acronym,title=Abkürzungsverzeichnis]
+
+% Abbildverzeichnis
+\iftotalfigures
+    \newpage
+    \listoffigures
+\fi
+
+% Tabellenverzeichnis
+\iftotaltables
+    \newpage
+    \listoftables
+\fi
+
+\setcounter{romannumbering}{\value{page}}
+% Beginn des Textteils mit arabischer Nummerierung
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\input{./inhalt/1_einleitung.tex}
+
+% Sperrvermerk und Ehrenwörtliche Erklärung
+\newpage
+\pagenumbering{Roman}
+\setcounter{page}{\numexpr\value{romannumbering}+1\relax}
+
+\renewcommand{\refname}{Literaturverzeichnis}
+\addcontentsline{toc}{section}{Literaturverzeichnis}
+\printbibliography
+
+\input{./ehrenw-erklaerung/erklaerung.tex}
+\input{./sperrvermerk/sperrvermerk.tex}
+
+\end{document}
